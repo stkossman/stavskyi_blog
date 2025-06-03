@@ -6,15 +6,23 @@ use App\Models\BlogCategory;
 use Illuminate\Support\Str;
 use App\Http\Requests\BlogCategoryUpdateRequest;
 use App\Http\Requests\BlogCategoryCreateRequest;
+use App\Repositories\BlogCategoryRepository;
 
 class CategoryController extends BaseController
 {
     /**
      * Display a listing of the resource.
      */
+    private $blogCategoryRepository;
+
+    public function __construct()
+    {
+        parent::__construct(); // Викликаємо конструктор батьківського класу (BaseController)
+        $this->blogCategoryRepository = app(BlogCategoryRepository::class); // Ініціалізуємо репозиторій
+    }
     public function index()
     {
-        $paginator = BlogCategory::paginate(5);
+        $paginator = $this->blogCategoryRepository->getAllWithPaginate(5);
 
         return view('blog.admin.categories.index', compact('paginator'));
     }
@@ -25,7 +33,7 @@ class CategoryController extends BaseController
     public function create()
     {
         $item = new BlogCategory();
-        $categoryList = BlogCategory::all();
+        $categoryList = $this->blogCategoryRepository->getForComboBox();
 
         return view('blog.admin.categories.edit', compact('item', 'categoryList'));
     }
@@ -67,8 +75,11 @@ class CategoryController extends BaseController
      */
     public function edit(string $id)
     {
-        $item = BlogCategory::findOrFail($id);
-        $categoryList = BlogCategory::all();
+        $item = $this->blogCategoryRepository->getEdit($id); // Отримуємо категорію через репозиторій
+        if (empty($item)) { //помилка, якщо репозиторій не знайде наш ід
+            abort(404); // Викидаємо 404 помилку, якщо категорію не знайдено
+        }
+        $categoryList = $this->blogCategoryRepository->getForComboBox($item->parent_id); // Отримуємо список для комбобоксу
 
         return view('blog.admin.categories.edit', compact('item', 'categoryList'));
     }
@@ -78,7 +89,7 @@ class CategoryController extends BaseController
      */
     public function update(BlogCategoryUpdateRequest $request, $id)
     {
-        $item = BlogCategory::find($id);
+        $item = $this->blogCategoryRepository->getEdit($id);
         if (empty($item)) {
             return back()
             ->withErrors(['msg' => "Запис id=[{$id}] не знайдено"])
