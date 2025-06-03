@@ -41,7 +41,14 @@ class BlogPostRepository extends CoreRepository
         $result = $this->startConditions()
             ->select($columns)
             ->orderBy('id', 'DESC') // Сортуємо за ID у зворотньому порядку
-            ->paginate(25); // 25 елементів на сторінку
+            ->with([ // Додаємо жадібне завантаження
+                'category' => function ($query) { // Завантажуємо категорію, вибираючи лише id та title
+                    $query->select(['id', 'title']);
+                },
+                // 'category:id,title', // Альтернативний, коротший синтаксис для вибору стовпців
+                'user:id,name', // Завантажуємо користувача, вибираючи лише id та name
+            ])
+            ->paginate(25);
 
         return $result;
     }

@@ -25,8 +25,8 @@
                                 <tr @if (!$post->is_published) style="background-color: #ccc;" @endif>
                                     <td>{{ $post->id }}</td>
                                     {{-- Тут поки виводимо лише ID користувача та категорії. В майбутньому потрібно буде завантажувати повні об'єкти --}}
-                                    <td>{{ $post->user_id }}</td>
-                                    <td>{{ $post->category_id }}</td>
+                                    <td>{{ $post->user->name }}</td> {{-- виводимо ім'я користувача --}}
+                                    <td>{{ $post->category->title }}</td> {{-- виводимо назву категорії --}}
                                     <td><a href="{{ route('blog.admin.posts.edit', $post->id) }}">{{ $post->title }}</a></td>
                                     <td>{{ $post->published_at ? \Carbon\Carbon::parse($post->published_at)->format('d.M H:i') : '' }}
                                     </td>
