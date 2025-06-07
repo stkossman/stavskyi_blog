@@ -9,9 +9,13 @@ use App\Http\Requests\BlogPostUpdateRequest;
 use Illuminate\Support\Str;
 use App\Models\BlogPost;
 use App\Http\Requests\BlogPostCreateRequest;
+use App\Jobs\BlogPostAfterCreateJob;
+use App\Jobs\BlogPostAfterDeleteJob;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 
 class PostController extends BaseController
 {
+    use DispatchesJobs;
     /**
      * Display a listing of the resource.
      */
@@ -48,14 +52,14 @@ class PostController extends BaseController
      */
     public function store(BlogPostCreateRequest $request)
     {
-        $data = $request->input(); // Отримуємо масив даних, які надійшли з форми
-
-        // Логіка генерації slug, published_at та user_id перенесена в Observer.
-        // Логіка content_html також перенесена в Observer.
+        $data = $request->input();
 
         $item = (new BlogPost())->create($data);
 
         if ($item) {
+            $job = new BlogPostAfterCreateJob($item);
+            $this->dispatch($job);
+
             return redirect()
                 ->route('blog.admin.posts.edit', [$item->id])
                 ->with(['success' => 'Успішно збережено']);
@@ -79,13 +83,13 @@ class PostController extends BaseController
      */
     public function edit(string $id)
     {
-        $item = $this->blogPostRepository->getEdit($id); // Отримуємо статтю через репозиторій
-        if (empty($item)) { //помилка, якщо репозиторій не знайде наш ід
-            abort(404); // Якщо пост не знайдено, викидаємо 404
+        $item = $this->blogPostRepository->getEdit($id);
+        if (empty($item)) {
+            abort(404);
         }
-        $categoryList = $this->blogCategoryRepository->getForComboBox(); // Отримуємо список категорій для випадаючого списку
+        $categoryList = $this->blogCategoryRepository->getForComboBox();
 
-        return view('blog.admin.posts.edit', compact('item', 'categoryList')); // Передаємо дані у view
+        return view('blog.admin.posts.edit', compact('item', 'categoryList'));
     }
 
     /**
@@ -93,16 +97,16 @@ class PostController extends BaseController
      */
     public function update(BlogPostUpdateRequest $request, string $id)
     {
-        $item = $this->blogPostRepository->getEdit($id); // Отримуємо статтю через репозиторій
-        if (empty($item)) { //якщо ід не знайдено
-            return back() //redirect back
-            ->withErrors(['msg' => "Запис id=[{$id}] не знайдено"]) //видати помилку
-            ->withInput(); //повернути дані
+        $item = $this->blogPostRepository->getEdit($id);
+        if (empty($item)) {
+            return back()
+            ->withErrors(['msg' => "Запис id=[{$id}] не знайдено"])
+            ->withInput();
         }
 
-        $data = $request->all(); //отримаємо масив даних, які надійшли з форми
+        $data = $request->all();
 
-        $result = $item->update($data); //оновлюємо дані об'єкта і зберігаємо в БД
+        $result = $item->update($data);
 
         if ($result) {
             return redirect()
@@ -110,7 +114,7 @@ class PostController extends BaseController
                 ->with(['success' => 'Успішно збережено']);
         } else {
             return back()
-                ->withErrors(['msg' => 'Помилка збереження']) // Використовуємо withErrors для повідомлень про помилки
+                ->withErrors(['msg' => 'Помилка збереження'])
                 ->withInput();
         }
     }
@@ -120,11 +124,11 @@ class PostController extends BaseController
      */
     public function destroy(string $id)
     {
-        $result = BlogPost::destroy($id); // Використовуємо soft delete, запис лишається в БД, але позначається як видалений
-
-        // $result = BlogPost::find($id)->forceDelete(); // Повне видалення з БД (для використання, якщо потрібне жорстке видалення)
+        $result = BlogPost::destroy($id);
 
         if ($result) {
+            BlogPostAfterDeleteJob::dispatch($id)->delay(now()->addSeconds(20));
+
             return redirect()
                 ->route('blog.admin.posts.index')
                 ->with(['success' => "Запис id[$id] видалено"]);
