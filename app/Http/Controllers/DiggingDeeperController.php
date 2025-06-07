@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\BlogPost;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use App\Jobs\ProcessVideoJob;
+use App\Jobs\GenerateCatalog\GenerateCatalogMainJob;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 
 class DiggingDeeperController extends Controller
 {
+    use DispatchesJobs;
     public function collections()
     {
         $result = [];
@@ -114,5 +118,14 @@ class DiggingDeeperController extends Controller
         //dd(compact('sortedSimpleCollection', 'sortedAscCollection', 'sortedDescCollection'));
 
         return 'Дивись у PhpStorm Debugger (або у вивід dd() в браузері), розкоментовуючи по черзі!';
+    }
+    public function processVideo()
+    {
+        ProcessVideoJob::dispatch();
+    }
+    public function prepareCatalog()
+    {
+        GenerateCatalogMainJob::dispatch();
+        return "Каталог готується... Перевірте логи та чергу!";
     }
 }
