@@ -25,7 +25,7 @@
                                             {{ $item->title }}
                                         </a>
                                     </td>
-                                    <td>{{ $item->parentTitle }}</td> {{-- Виводимо назву батьківської категорії через аксесор --}}
+                                    <td>{{ $item->parentTitle }}</td>
                                 </tr>
                             @endforeach
                             </tbody>
