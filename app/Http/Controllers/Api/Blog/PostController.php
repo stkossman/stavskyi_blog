@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BlogPost;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PostController extends Controller
 {
@@ -53,5 +54,27 @@ class PostController extends Controller
                 'next' => $posts->nextPageUrl(),
             ],
         ]);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  string  $slug
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(string $slug)
+    {
+        try {
+            $post = BlogPost::where('slug', $slug)
+                ->with(['user:id,name', 'category:id,title'])
+                ->firstOrFail();
+
+            return response()->json($post);
+
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Post not found.'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'An error occurred.', 'error' => $e->getMessage()], 500);
+        }
     }
 }
