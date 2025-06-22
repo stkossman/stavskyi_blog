@@ -28,8 +28,17 @@ class BlogCategory extends Model
      */
     public function parentCategory()
     {
-        // Категорія належить іншій категорії (батьківській)
         return $this->belongsTo(BlogCategory::class, 'parent_id', 'id');
+    }
+
+    public function childrenCategories()
+    {
+        return $this->hasMany(BlogCategory::class, 'parent_id');
+    }
+
+    public function blogPosts()
+    {
+        return $this->hasMany(BlogPost::class, 'category_id');
     }
 
     /**
@@ -43,9 +52,9 @@ class BlogCategory extends Model
     public function getParentTitleAttribute(): string
     {
         $title = $this->parentCategory->title
-            ?? ($this->isRoot() // Якщо parentCategory не існує (null)
-                ? 'Корінь' // І це коренева категорія (ID 1)
-                : '???'); // Інакше (невідома батьківська або помилка)
+            ?? ($this->isRoot()
+                ? 'Корінь'
+                : '???');
 
         return $title;
     }
@@ -57,6 +66,10 @@ class BlogCategory extends Model
      */
     public function isRoot(): bool
     {
-        return $this->id === self::ROOT; // Використовуємо self::ROOT
+        return $this->id === self::ROOT;
     }
+
+     protected $casts = [
+         'parent_id' => 'integer',
+     ];
 }

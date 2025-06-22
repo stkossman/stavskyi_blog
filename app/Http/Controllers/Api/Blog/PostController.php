@@ -32,8 +32,7 @@ class PostController extends Controller
                 'slug' => $post->slug,
                 'is_published' => $post->is_published,
                 'published_at' => $post->published_at ? \Carbon\Carbon::parse($post->published_at)->format('d.M H:i') : '',
-                'user' => ['name' => $post->user->name],
-                'category' => ['title' => $post->category->title],
+                'user' => ['name' => $post->user->name]
             ];
         });
 
