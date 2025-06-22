@@ -17,8 +17,8 @@ class CategoryController extends BaseController
 
     public function __construct()
     {
-        parent::__construct(); // Викликаємо конструктор батьківського класу (BaseController)
-        $this->blogCategoryRepository = app(BlogCategoryRepository::class); // Ініціалізуємо репозиторій
+        parent::__construct();
+        $this->blogCategoryRepository = app(BlogCategoryRepository::class);
     }
     public function index()
     {
@@ -71,11 +71,11 @@ class CategoryController extends BaseController
      */
     public function edit(string $id)
     {
-        $item = $this->blogCategoryRepository->getEdit($id); // Отримуємо категорію через репозиторій
-        if (empty($item)) { //помилка, якщо репозиторій не знайде наш ід
-            abort(404); // Викидаємо 404 помилку, якщо категорію не знайдено
+        $item = $this->blogCategoryRepository->getEdit($id);
+        if (empty($item)) {
+            abort(404);
         }
-        $categoryList = $this->blogCategoryRepository->getForComboBox($item->parent_id); // Отримуємо список для комбобоксу
+        $categoryList = $this->blogCategoryRepository->getForComboBox($item->parent_id);
 
         return view('blog.admin.categories.edit', compact('item', 'categoryList'));
     }

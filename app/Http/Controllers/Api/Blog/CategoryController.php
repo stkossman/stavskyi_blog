@@ -59,10 +59,9 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|min:3|max:200|unique:blog_categories,title',
-            'slug' => 'nullable|string|max:200|unique:blog_categories,slug',
-            'description' => 'nullable|string|max:500',
-            'parent_id' => 'nullable|integer|exists:blog_categories,id',
+            'title' => 'required|unique:blog_categories,title',
+            'slug' => 'nullable|unique:blog_categories,slug',
+            'parent_id' => 'nullable|exists:blog_categories,id',
         ]);
 
         $data = $request->all();

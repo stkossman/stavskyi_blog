@@ -37,7 +37,6 @@ class BlogPost extends Model
      */
     public function category()
     {
-        // Стаття належить категорії
         return $this->belongsTo(BlogCategory::class);
     }
 
@@ -48,7 +47,6 @@ class BlogPost extends Model
      */
     public function user()
     {
-        // Стаття належить користувачу
         return $this->belongsTo(User::class);
     }
 }

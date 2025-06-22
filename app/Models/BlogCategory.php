@@ -42,8 +42,6 @@ class BlogCategory extends Model
     }
 
     /**
-     * Приклад аксесора (Accessor):
-     * Повертає назву батьківської категорії або "Корінь"/"???".
      *
      * @url https://laravel.com/docs/7.x/eloquent-mutators
      *
